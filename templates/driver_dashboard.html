@@ -61,138 +61,85 @@
             </button>
         </div>
     </nav>
-
-    <!-- Main Content -->
-    <main class="driver-content">
-        <!-- Tasks Tab -->
-        <div id="tasksTab" class="tab-content active">
-            <!-- Current Task -->
-            <div class="current-task-section">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="mb-0">
-                            <i class="fas fa-play-circle"></i> المهمة الحالية
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        {% if tasks %}
-                            {% for task in tasks %}
-                            <div class="current-task">
-                                <div class="task-info">
-                                    <h5>{{ task.task_id }}</h5>
-                                    <p class="text-muted">مهمة جمع نفايات</p>
-                                    <div class="task-stats">
-                                        <div class="stat-item">
-                                            <span class="stat-number">{{ task.task_bins|length if task.task_bins else 0 }}</span>
-                                            <span class="stat-label">حاوية</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-number">{{ task.priority }}</span>
-                                            <span class="stat-label">أولوية</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-number">{{ task.scheduled_time.strftime('%H:%M') if task.scheduled_time else 'غير محدد' }}</span>
-                                            <span class="stat-label">وقت</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="task-actions">
-                                    {% if task.status == 'pending' or task.status == 'assigned' %}
-                                    <button class="btn btn-success btn-lg" onclick="startTask('{{ task.id }}')">
-                                        <i class="fas fa-play"></i> بدء المهمة
-                                    </button>
-                                    {% elif task.status == 'in_progress' %}
-                                    <button class="btn btn-warning btn-lg" onclick="pauseTask('{{ task.id }}')">
-                                        <i class="fas fa-pause"></i> إيقاف مؤقت
-                                    </button>
-                                    <button class="btn btn-primary btn-lg ms-2" onclick="completeTask('{{ task.id }}')">
-                                        <i class="fas fa-check"></i> إنهاء المهمة
-                                    </button>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="no-tasks">
-                                <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-                                <h6>لا توجد مهام حالية</h6>
-                                <p class="text-muted">ستظهر المهام الجديدة هنا عند تعيينها لك</p>
-                            </div>
-                        {% endif %}
-                    </div>
+<main class="driver-content">
+    <!-- Tasks Tab -->
+    <div id="tasksTab" class="tab-content active">
+        <!-- Current Task -->
+        <div class="current-task-section">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-play-circle"></i> المهمة الحالية
+                    </h6>
                 </div>
-            </div>
-
-            <!-- Task Bins List -->
-            {% if tasks %}
-            <div class="task-bins-section">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="mb-0">
-                            <i class="fas fa-trash-alt"></i> حاويات المهمة
-                        </h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="bins-list">
-                            {% for task in tasks %}
-                                {% if task.task_bins %}
-                                    {% for task_bin in task.task_bins %}
-                                    <div class="bin-item" data-bin-id="{{ task_bin.bin.id }}">
-                                        <div class="bin-info">
-                                            <div class="bin-header">
-                                                <h6 class="bin-id">{{ task_bin.bin.bin_id }}</h6>
-                                                <span class="bin-status {{ task_bin.status }}">
-                                                    {% if task_bin.status == 'pending' %}
-                                                        <i class="fas fa-clock"></i> في الانتظار
-                                                    {% elif task_bin.status == 'collected' %}
-                                                        <i class="fas fa-check"></i> تم الجمع
-                                                    {% else %}
-                                                        <i class="fas fa-times"></i> تم التخطي
-                                                    {% endif %}
-                                                </span>
-                                            </div>
-                                            <p class="bin-location">
-                                                <i class="fas fa-map-marker-alt"></i> {{ task_bin.bin.location }}
-                                                <br><small class="text-muted">
-                                                    <i class="fas fa-globe"></i> 
-                                                    {{ "%.4f"|format(task_bin.bin.latitude) }}, {{ "%.4f"|format(task_bin.bin.longitude) }}
-                                                </small>
-                                            </p>
-                                            <div class="bin-details">
-                                                <span class="fill-level">
-                                                    <i class="fas fa-chart-pie"></i> {{ task_bin.bin.fill_level }}%
-                                                </span>
-                                                <span class="bin-type">
-                                                    <i class="fas fa-tag"></i> {{ task_bin.bin.waste_type or 'مختلط' }}
-                                                </span>
-                                                <span class="distance" data-lat="{{ task_bin.bin.latitude }}" data-lng="{{ task_bin.bin.longitude }}">
-                                                    <i class="fas fa-route"></i> <span class="distance-text">جاري الحساب...</span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="bin-actions">
-                                            {% if task_bin.status == 'pending' %}
-                                            <button class="btn btn-info btn-sm" onclick="navigateToBin('{{ task_bin.bin.latitude }}', '{{ task_bin.bin.longitude }}', '{{ task_bin.bin.bin_id }}')">
-                                                <i class="fas fa-directions"></i> تنقل
-                                            </button>
-                                            <button class="btn btn-success btn-sm" onclick="markBinCollected('{{ task.id }}', '{{ task_bin.bin.id }}')">
-                                                <i class="fas fa-check"></i> وصلت
-                                            </button>
-                                            {% elif task_bin.status == 'collected' %}
-                                            <button class="btn btn-outline-success btn-sm" disabled>
-                                                <i class="fas fa-check-circle"></i> مكتمل
-                                            </button>
+                <div class="card-body">
+                    {% if tasks %}
+                        {% for task in tasks %}
+                        <div class="current-task">
+                            <div class="task-info">
+                                <h5>{{ task.task_id }} - {{ task.title or '' }}</h5>
+                                <p class="text-muted">{{ task.description or 'مهمة جمع نفايات' }}</p>
+                                <div class="task-stats">
+                                    <div class="stat-item">
+                                        <!-- استخدام total_bins لأن القاموس يحتوي عليه -->
+                                        <span class="stat-number">{{ task.total_bins or 0 }}</span>
+                                        <span class="stat-label">حاوية</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-number">{{ task.priority or 'normal' }}</span>
+                                        <span class="stat-label">أولوية</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <!-- scheduled_time هنا سلسلة ISO مثل "2025-10-07T09:04:00" -->
+                                        <span class="stat-number">
+                                            {% if task.scheduled_time %}
+                                                {{ task.scheduled_time[11:16] }}
+                                            {% else %}
+                                                غير محدد
                                             {% endif %}
-                                        </div>
+                                        </span>
+                                        <span class="stat-label">وقت</span>
                                     </div>
-                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                {% if task.status == 'pending' or task.status == 'assigned' %}
+                                <button class="btn btn-success btn-lg" onclick="startTask('{{ task.id }}')">
+                                    <i class="fas fa-play"></i> بدء المهمة
+                                </button>
+                                {% elif task.status == 'in_progress' %}
+                                <button class="btn btn-warning btn-lg" onclick="pauseTask('{{ task.id }}')">
+                                    <i class="fas fa-pause"></i> إيقاف مؤقت
+                                </button>
+                                <button class="btn btn-primary btn-lg ms-2" onclick="completeTask('{{ task.id }}')">
+                                    <i class="fas fa-check"></i> إنهاء المهمة
+                                </button>
+                                {% elif task.status == 'completed' %}
+                                <button class="btn btn-outline-success btn-lg" disabled>
+                                    <i class="fas fa-check-circle"></i> مكتمل
+                                </button>
                                 {% endif %}
-                            {% endfor %}
+                            </div>
                         </div>
-                    </div>
+                        <hr>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-tasks">
+                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                            <h6>لا توجد مهام حالية</h6>
+                            <p class="text-muted">ستظهر المهام الجديدة هنا عند تعيينها لك</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
+        </div>
+
+        <!-- NOTE: Your provided task objects don't include task_bins.
+             If you later pass task.task_bins (قائمة الحاويات) inside كل مهمة,
+             you can re-enable a bins section similar to the original template. -->
+    </div>
+</main>
+
 
             <!-- Quick Actions -->
             <div class="quick-actions">

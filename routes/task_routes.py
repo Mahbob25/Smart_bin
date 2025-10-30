@@ -174,7 +174,6 @@ def api_get_task(task_id):
     try:
         
         task = Task.query.get_or_404(task_id)
-        
         # Check permission
         if session.get('role') == 'driver':
             user = User.query.get(session['user_id'])
@@ -219,7 +218,7 @@ def api_update_task(task_id):
         # Update vehicle status based on task status
         if 'status' in data:
             if data['status'] == 'completed':
-                task.vehicle.status = 'available'
+                # task.vehicle.status = 'available'
                 task.completed_time = datetime.utcnow()
             elif data['status'] == 'in_progress':
                 task.started_time = datetime.utcnow()

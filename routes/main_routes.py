@@ -102,7 +102,7 @@ def create_task():
     if 'user_id' not in session or session['role'] not in ['admin', 'manager']:
         return redirect(url_for('main.login'))
     
-    full_bins = Bin.query.filter(Bin.fill_level >= 80, Bin.status == 'active').all()
+    full_bins = Bin.query.filter(Bin.fill_level >= 80, Bin.status == 'active').all() 
     drivers = Driver.query.join(User).filter(User.is_active == True, Driver.status == 'online').all()
     vehicles = Vehicle.query.filter(Vehicle.status == 'available').all()
     
@@ -113,6 +113,7 @@ def create_task():
 
 @main_routes.route('/driver-dashboard')
 def driver_dashboard():
+    print('driver dashboard')
     if 'user_id' not in session or session['role'] != 'driver':
         return redirect(url_for('main.login'))
     
@@ -120,10 +121,14 @@ def driver_dashboard():
     # return redirect(url_for('main.dashboard'))
     driver_id= session['user_id']
     driver = Driver.query.filter_by(user_id=driver_id).first()
+    driverid = driver.id
     driver.status = 'online'
     driver.last_login = datetime.utcnow()
     db.session.commit() 
-    task = Task.query.filter_by(driver_id=driver_id).all()
+    task = Task.query.filter_by(driver_id=driverid).all()
+    task = [task.to_dict() for task in task]    
+    print(task)
+    print(driver_id)
 
     return render_template('driver_dashboard.html', tasks=task) 
 

@@ -139,12 +139,11 @@ def api_delete_bin(bin_id):
         return jsonify({'error': str(e)}), 500
 
 @bin_api.route('/api/bins/<int:bin_id>/sensor-readings', methods=['POST'])
-@driver_required
 def api_add_sensor_reading(bin_id):
     try:
         bin_obj = Bin.query.get_or_404(bin_id)
         data = request.get_json()
-        
+        print("data:", data)
         if not data:
             return jsonify({'error': 'JSON data required'}), 400
         

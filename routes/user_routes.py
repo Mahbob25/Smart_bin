@@ -161,7 +161,7 @@ def api_update_user(user_id):
         
         if 'password' in data:
             user.set_password(data['password'])
-        
+       
         # Handle role changes
         if 'role' in data and old_role != data['role']:
             if data['role'] == 'driver' and not user.driver_profile:
@@ -170,7 +170,10 @@ def api_update_user(user_id):
                     user_id=user.id,
                     license_number=data.get('license_number'),
                     emergency_contact=data.get('emergency_contact'),
-                    emergency_phone=data.get('emergency_phone')
+                    emergency_phone=data.get('emergency_phone'),
+                    vehicle_type=data.get('vehicle_type'),
+                    vehicle_id = data.get('vehicle_id'),
+                    status=data.get('status')
                 )
                 db.session.add(driver)
             elif old_role == 'driver' and data['role'] != 'driver' and user.driver_profile:

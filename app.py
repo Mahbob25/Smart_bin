@@ -66,34 +66,34 @@ app.register_blueprint(task_api)
 init_socketio_events(socketio)
 
 
-# Simulate real-time updates
-def start_background_tasks():
-    def simulate_updates():
-        while True:
-            time.sleep(30)  # Update every 30 seconds
-            with app.app_context():
-                # Simulate bin fill level changes for bins that exist
-                bins = Bin.query.all()
-                for bin_obj in bins:
-                    # Random fill level change
-                    change = random.randint(-2, 8)
-                    new_fill_level = max(0, min(100, bin_obj.fill_level + change))
-                    bin_obj.fill_level = new_fill_level
+# # Simulate real-time updates
+# def start_background_tasks():
+#     def simulate_updates():
+#         while True:
+#             time.sleep(30)  # Update every 30 seconds
+#             with app.app_context():
+#                 # Simulate bin fill level changes for bins that exist
+#                 bins = Bin.query.all()
+#                 for bin_obj in bins:
+#                     # Random fill level change
+#                     change = random.randint(-2, 8)
+#                     new_fill_level = max(0, min(100, bin_obj.fill_level + change))
+#                     bin_obj.fill_level = new_fill_level
                     
-                    # Emit update to all connected clients
-                    socketio.emit('bin_status_update', {
-                        'bin_id': bin_obj.bin_id,
-                        'fill_level': new_fill_level,
-                        'status': 'critical' if new_fill_level >= 90 else 'warning' if new_fill_level >= 80 else 'normal'
-                    })
+#                     # Emit update to all connected clients
+#                     socketio.emit('bin_status_update', {
+#                         'bin_id': bin_obj.bin_id,
+#                         'fill_level': new_fill_level,
+#                         'status': 'critical' if new_fill_level >= 90 else 'warning' if new_fill_level >= 80 else 'normal'
+#                     })
                 
-                try:
-                    db.session.commit()
-                except Exception as e:
-                    print(f'Error updating bins: {e}')
-                    db.session.rollback()
+#                 try:
+#                     db.session.commit()
+#                 except Exception as e:
+#                     print(f'Error updating bins: {e}')
+#                     db.session.rollback()
     
-    threading.Thread(target=simulate_updates, daemon=True).start()
+#     threading.Thread(target=simulate_updates, daemon=True).start()
 
 if __name__ == '__main__':
     with app.app_context():
@@ -114,8 +114,8 @@ if __name__ == '__main__':
             db.session.commit()
             print('Created admin user: admin@collectme.com / admin123')
     
-    # Start background simulation tasks
-    start_background_tasks()
+    # # Start background simulation tasks
+    # start_background_tasks()
     
     # Run with SocketIO
     socketio.run(app, debug=True, host='0.0.0.0', port=5000)

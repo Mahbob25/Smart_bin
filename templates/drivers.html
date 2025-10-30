@@ -471,6 +471,12 @@
                                 <input type="email" class="form-control" id="editDriverEmail" name="email" required>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editDriverId" class="form-label">vehicl id </label>
+                                <input class="form-control" id="editDriverVehicle" name="vehicle_id" required>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -489,8 +495,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="editDriverVehicle" class="form-label">المركبة</label>
-                                <select class="form-select" id="editDriverVehicle" name="vehicle_id">
+                                <label for="editDriverType" class="form-label">المركبة</label>
+                                <select class="form-select" id="editDriverType" name="vehicle_type">
                                     <option value="">بدون مركبة</option>
                                     <option value="V001">شاحنة صغيرة</option>
                                     <option value="V002">شاحنة متوسطة</option>
@@ -817,6 +823,7 @@ async function editDriver(driverId) {
         _setVal('editDriverPhone', driver.phone);
         _setVal('editDriverLicense', driver.license_number);
         _setVal('editDriverVehicle', driver.vehicle_id);
+        _setVal('editDriverType', driver.vehicle_type);
         _setVal('editDriverStatus', driver.status ?? 'offline');
 
         const instance = bootstrap.Modal.getInstance(editModalEl) || new bootstrap.Modal(editModalEl);
@@ -875,7 +882,8 @@ function submitEditDriver() {
         phone: formData.get('phone'),
         license_number: formData.get('license_number'),
         vehicle_id: formData.get('vehicle_id'),
-        status: formData.get('status')
+        status: formData.get('status'),
+        vehicle_type: formData.get('vehicle_type'),
     };
 
     const password = formData.get('password');

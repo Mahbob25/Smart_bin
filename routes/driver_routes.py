@@ -1,3 +1,4 @@
+from operator import contains
 from flask import Blueprint, request, jsonify, session
 from datetime import datetime
 from models import db, User, Task, Driver
@@ -80,107 +81,36 @@ def api_get_driver(driver_id):
         
         return jsonify({'error': str(e)}), 500
 
-# @driver_api.route('/api/drivers/<int:driver_id>', methods=['PUT'])
-# @admin_required
-# def api_update_driver(driver_id):
-    
-#     try:
-       
-#         driver = Driver.query.get_or_404(driver_id)
-        
-#         data = request.get_json()
-       
-#         if not data:
-#             return jsonify({'error': 'JSON data required'}), 400
-        
-#         # Update driver fields
-#         for field in ['license_number', 'license_expiry', 'vehicle_id', 'emergency_contact', 'emergency_phone', 'status']:
-#             if field in data:
-#                 if field == 'license_expiry' and data[field]:
-#                     setattr(driver, field, datetime.fromisoformat(data[field]).date())
-#                 else:
-#                     setattr(driver, field, data[field])
-        
-#         # Update user fields if provided
-#         if driver.user:
-#             user = driver.user
-#             for field in ['name', 'email', 'phone', 'username']:
-                
-#                 if field in data:
-#                     if field == 'email' and data[field] != user.email:  
-#                         if User.query.filter_by(email=data[field]).first():
-#                             return jsonify({'error': 'Email already exists'}), 400
-                    
-#                     if field == 'username' and data[field] != user.username:
-#                         if User.query.filter_by(username=data[field]).first():
-#                             return jsonify({'error': 'Username already exists'}), 400
-                    
-#                     setattr(user, field, data[field])
-            
-#             if 'password' in data:
-#                 user.set_password(data['password'])
-            
-#             user.updated_at = datetime.utcnow()
-        
-#         driver.updated_at = datetime.utcnow()
-#         db.session.commit()
-        
-#         return jsonify({'message': 'Driver updated successfully', 'driver': driver.to_dict()})
-#     except ValueError as e:
-#         return jsonify({'error': str(e)}), 400
-#     except Exception as e:
-#         return jsonify({'error': str(e)}), 500
-
 @driver_api.route('/api/drivers/<int:driver_id>', methods=['PUT'])
 @admin_required
 def api_update_driver(driver_id):
-        
+    
     try:
+       
         driver = Driver.query.get_or_404(driver_id)
         
         data = request.get_json()
-        print(f"Data: {data}")
+       
         if not data:
             return jsonify({'error': 'JSON data required'}), 400
         
-        # تحديث حقول السائق
-        for field in ['license_number', 'license_expiry', 'vehicle_id', 'emergency_contact', 'emergency_phone', 'status']:
+        
+            
+        # Update driver fields
+        for field in ['license_number', 'license_expiry', 'vehicle_id', 'emergency_contact', 'emergency_phone', 'status', 'vehicle_type']:
             if field in data:
                 if field == 'license_expiry' and data[field]:
                     setattr(driver, field, datetime.fromisoformat(data[field]).date())
-                
-                elif field == 'vehicle_id':
-                    val = data[field]
-                    # حالة الحقل فارغ -> NULL
-                    if val == '' or val is None:
-                        driver.vehicle_id = None
-                    else:
-                        driver.vehicle_id = int(val)
-                        # حاول تحويل القيمة إلى int (id)
-                        try:
-                            vehicle_id_int = int(val)
-                            vehicle = Vehicle.query.get(vehicle_id_int)
-                            if not vehicle:
-                                return jsonify({'error': f'Vehicle with id {vehicle_id_int} not found'}), 400
-                            driver.vehicle_id = vehicle_id_int
-                        except (ValueError, TypeError):
-                            # القيمة ليست رقمًا -> حاول البحث بحسب license_plate
-                            # نستخدم no_autoflush لتجنّب flush مبكر إذا كان هناك تغييرات معلقة
-                            with db.session.no_autoflush:
-                                vehicle = Vehicle.query.filter(Vehicle.license_plate == val).first()
-                            if vehicle:
-                                driver.vehicle_id = vehicle.id
-                            else:
-                                return jsonify({'error': f'Invalid vehicle identifier: {val}'}), 400
                 else:
                     setattr(driver, field, data[field])
         
-        # تحديث حقول المستخدم إذا وجدت
+        # Update user fields if provided
         if driver.user:
             user = driver.user
             for field in ['name', 'email', 'phone', 'username']:
+                
                 if field in data:
-                    if field == 'email' and data[field] != user.email:
+                    if field == 'email' and data[field] != user.email:  
                         if User.query.filter_by(email=data[field]).first():
                             return jsonify({'error': 'Email already exists'}), 400
                     
@@ -202,14 +132,87 @@ def api_update_driver(driver_id):
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except Exception as e:
-        # طباعة استثناء في السرفر مفيد للتديباغ
-        print("Exception in api_update_driver:", repr(e))
         return jsonify({'error': str(e)}), 500
+
+# @driver_api.route('/api/drivers/<int:driver_id>', methods=['PUT'])
+# @admin_required
+# def api_update_driver(driver_id):
+        
+#     try:
+#         driver = Driver.query.get_or_404(driver_id)
+        
+#         data = request.get_json()
+#         print(f"Data: {data}")
+#         if not data:
+#             return jsonify({'error': 'JSON data required'}), 400
+        
+#         # تحديث حقول السائق
+#         for field in ['license_number', 'license_expiry', 'vehicle_id', 'emergency_contact', 'emergency_phone', 'status']:
+#             if field in data:
+#                 if field == 'license_expiry' and data[field]:
+#                     setattr(driver, field, datetime.fromisoformat(data[field]).date())
+                
+#                 elif field == 'vehicle_id':
+#                     val = data[field]
+#                     # حالة الحقل فارغ -> NULL
+#                     if val == '' or val is None:
+#                         driver.vehicle_id = None
+#                     else:
+#                         driver.vehicle_id = int(val)
+#                         # حاول تحويل القيمة إلى int (id)
+#                         try:
+#                             vehicle_id_int = int(val)
+#                             vehicle = Vehicle.query.get(vehicle_id_int)
+#                             if not vehicle:
+#                                 return jsonify({'error': f'Vehicle with id {vehicle_id_int} not found'}), 400
+#                             driver.vehicle_id = vehicle_id_int
+#                         except (ValueError, TypeError):
+#                             # القيمة ليست رقمًا -> حاول البحث بحسب license_plate
+#                             # نستخدم no_autoflush لتجنّب flush مبكر إذا كان هناك تغييرات معلقة
+#                             with db.session.no_autoflush:
+#                                 vehicle = Vehicle.query.filter(Vehicle.license_plate == val).first()
+#                             if vehicle:
+#                                 driver.vehicle_id = vehicle.id
+#                             else:
+#                                 return jsonify({'error': f'Invalid vehicle identifier: {val}'}), 400
+#                 else:
+#                     setattr(driver, field, data[field])
+        
+#         # تحديث حقول المستخدم إذا وجدت
+#         if driver.user:
+#             user = driver.user
+#             for field in ['name', 'email', 'phone', 'username']:
+#                 if field in data:
+#                     if field == 'email' and data[field] != user.email:
+#                         if User.query.filter_by(email=data[field]).first():
+#                             return jsonify({'error': 'Email already exists'}), 400
+                    
+#                     if field == 'username' and data[field] != user.username:
+#                         if User.query.filter_by(username=data[field]).first():
+#                             return jsonify({'error': 'Username already exists'}), 400
+                    
+#                     setattr(user, field, data[field])
+            
+#             if 'password' in data:
+#                 user.set_password(data['password'])
+            
+#             user.updated_at = datetime.utcnow()
+        
+#         driver.updated_at = datetime.utcnow()
+#         db.session.commit()
+        
+#         return jsonify({'message': 'Driver updated successfully', 'driver': driver.to_dict()})
+#     except ValueError as e:
+#         return jsonify({'error': str(e)}), 400
+#     except Exception as e:
+#         # طباعة استثناء في السرفر مفيد للتديباغ
+#         print("Exception in api_update_driver:", repr(e))
+#         return jsonify({'error': str(e)}), 500
 
 @driver_api.route('/api/drivers/<int:driver_id>', methods=['DELETE'])
 @admin_required
 def api_delete_driver(driver_id):
-    print("")
+    
     try:
         driver = Driver.query.get_or_404(driver_id)
         
